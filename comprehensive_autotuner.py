@@ -15,9 +15,17 @@ from pathlib import Path
 from datetime import datetime
 import subprocess
 from scipy.optimize import minimize
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import Matern
 import matplotlib.pyplot as plt
+
+# Optional sklearn import for Bayesian optimization
+try:
+    from sklearn.gaussian_process import GaussianProcessRegressor
+    from sklearn.gaussian_process.kernels import Matern
+    SKLEARN_AVAILABLE = True
+    print("✅ scikit-learn available - Bayesian optimization enabled")
+except ImportError:
+    SKLEARN_AVAILABLE = False
+    print("⚠️  scikit-learn not available - using random sampling only")
 
 class FuzzyMetaballsAutotuner:
     def __init__(self, base_config_path='config.yaml', results_dir='autotune_results'):
@@ -98,13 +106,18 @@ class FuzzyMetaballsAutotuner:
                         print(f"   📊 {name}: {params[name]:.4f} (linear, range: {min_val:.4f}-{max_val:.4f})")
             return params
         
-        elif method == 'bayesian' and len(self.results) >= 5:
+        elif method == 'bayesian' and len(self.results) >= 5 and SKLEARN_AVAILABLE:
             print(f"   🧠 Using Bayesian optimization (have {len(self.results)} previous results)")
             # Use Gaussian Process for intelligent sampling
             return self._bayesian_sample()
         
         else:
-            print(f"   ⚠️  Fallback to random sampling (method: {method}, results: {len(self.results)})")
+            if method == 'bayesian' and not SKLEARN_AVAILABLE:
+                print(f"   ⚠️  Bayesian optimization requested but sklearn not available, using random")
+            elif method == 'bayesian' and len(self.results) < 5:
+                print(f"   ⚠️  Not enough results for Bayesian optimization ({len(self.results)} < 5), using random")
+            else:
+                print(f"   ⚠️  Fallback to random sampling (method: {method}, results: {len(self.results)})")
             # Fallback to random
             return self.sample_parameters('random')
     
@@ -447,9 +460,12 @@ class FuzzyMetaballsAutotuner:
             if experiment_id < 20:
                 method = 'random'  # Start with random exploration
                 print(f"🎲 Phase: Random exploration (experiments 1-20)")
-            else:
+            elif SKLEARN_AVAILABLE:
                 method = 'bayesian'  # Use intelligent sampling
                 print(f"🧠 Phase: Bayesian optimization (experiments 21+)")
+            else:
+                method = 'random'  # Fallback to random if no sklearn
+                print(f"🎲 Phase: Random exploration (experiments 21+) - sklearn not available")
             
             # Sample parameters
             print(f"\n📋 Sampling parameters using {method} method...")

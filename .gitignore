@@ -15,3 +15,5 @@ fuzzy_cow_shape.pkl
 
 # OS
 .DS_Store
+
+output/

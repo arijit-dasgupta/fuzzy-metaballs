@@ -636,8 +636,8 @@ def main():
     
     print("⚡ PERFORMANCE COMPARISON vs. Mesh Renderers (Paper Claims)")
     print("-" * 80)
-    print(f"Forward pass:   {avg_forward:.3f} ms  (paper: ~5x faster)")
-    print(f"Backward pass:  {avg_backward:.3f} ms  (paper: ~30x faster)")
+    print(f"Forward pass:   {avg_forward:.3f} ms")
+    print(f"Backward pass:  {avg_backward:.3f} ms")
     print(f"Speedup ratio:  {avg_backward/avg_forward:.1f}x (backward vs forward)")
     print()
     print("💡 Note: Paper compared against mesh-based differentiable renderers")

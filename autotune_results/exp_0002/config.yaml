@@ -1,0 +1,48 @@
+hyperparams:
+  beta2_exp: 4.22671386510167
+  beta3_exp: 0.14762028577511718
+io:
+  mesh_file: data/cow.obj
+  model_filename: fuzzy_cow_shape.pkl
+  output_dir: output
+  save_model: true
+model:
+  gmm_init_scale: !!python/object/apply:numpy._core.multiarray.scalar
+  - &id001 !!python/object/apply:numpy.dtype
+    args:
+    - f8
+    - false
+    - true
+    state: !!python/tuple
+    - 3
+    - <
+    - null
+    - null
+    - null
+    - -1
+    - -1
+    - 0
+  - !!binary |
+    PlkmRQb08D8=
+  num_mixtures: 86
+  rand_sphere_size: 47.961149411906064
+optimization:
+  batch_size: 2939
+  clip_alpha: 3.0e-08
+  initial_lr: !!python/object/apply:numpy._core.multiarray.scalar
+  - *id001
+  - !!binary |
+    AHFwj4ZGXj8=
+  lr_decay_max_drops: 27
+  lr_decay_p_thresh: 0.2642496086268553
+  lr_decay_p_window: 14
+  lr_decay_slope_less: -0.00035771281847218374
+  lr_decay_window: 46
+  num_epochs: 61
+  opt_shape_scale: 3.295629118281051
+random_seed: 42
+rendering:
+  image_height: 176
+  image_width: 96
+  num_views: 48
+  vfov_degrees: 41.59040151277918

@@ -1,0 +1,48 @@
+# Fuzzy Metaballs Configuration
+# Based on: "Approximate Differentiable Rendering with Algebraic Surfaces"
+# Keselman & Hebert, ECCV 2022
+
+# Model Parameters
+model:
+  num_mixtures: 40              # Number of Gaussian mixture components
+  gmm_init_scale: 1.0           # Initial scale for GMM weights
+  rand_sphere_size: 30          # Initial sphere size for random initialization
+  
+# Rendering Parameters
+rendering:
+  num_views: 20                 # Number of camera views
+  image_width: 64               # Image width in pixels
+  image_height: 64              # Image height in pixels
+  vfov_degrees: 45              # Vertical field of view in degrees
+  
+# Optimization Parameters
+optimization:
+  num_epochs: 10                # Maximum number of training epochs
+  batch_size: 800               # Number of rays per batch
+  initial_lr: 0.1               # Initial learning rate
+  opt_shape_scale: 2.2          # Shape scale multiplier for optimization
+  clip_alpha: 3.0e-8            # Minimum alpha clipping value
+  
+  # Learning rate schedule (DegradeLR parameters)
+  lr_decay_p_thresh: 0.5        # Probability threshold for LR decay
+  lr_decay_window: 10           # Window size for slope estimation
+  lr_decay_p_window: 5          # Window for probability evaluation
+  lr_decay_slope_less: -1.0e-4  # Slope threshold for LR decay
+  lr_decay_max_drops: 4         # Maximum number of LR drops before stopping
+
+# Hyperparameters (from fm_render.py)
+# These control the rendering behavior
+hyperparams:
+  beta2_exp: 2.0                # Exponent for beta2 (distance weighting)
+  beta3_exp: 0.25               # Exponent for beta3 (density weighting)
+
+# Random Seed
+random_seed: 42                 # Random seed for reproducibility
+
+# Input/Output
+io:
+  mesh_file: "data/cow.obj"     # Path to input mesh file
+  output_dir: "output"          # Directory for output files
+  save_model: true              # Whether to save trained model
+  model_filename: "fuzzy_cow_shape.pkl"  # Trained model filename
+

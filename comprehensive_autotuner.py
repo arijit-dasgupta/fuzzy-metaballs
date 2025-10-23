@@ -228,51 +228,60 @@ class FuzzyMetaballsAutotuner:
         """Create configuration from parameters"""
         config = self.base_config.copy()
         
+        # Helper function to convert numpy types to Python types
+        def convert_numpy(value):
+            if hasattr(value, 'item'):  # numpy scalar
+                return value.item()
+            elif hasattr(value, 'tolist'):  # numpy array
+                return value.tolist()
+            else:
+                return value
+        
         # Update model parameters
         if 'num_mixtures' in params:
-            config['model']['num_mixtures'] = params['num_mixtures']
+            config['model']['num_mixtures'] = int(convert_numpy(params['num_mixtures']))
         if 'gmm_init_scale' in params:
-            config['model']['gmm_init_scale'] = params['gmm_init_scale']
+            config['model']['gmm_init_scale'] = float(convert_numpy(params['gmm_init_scale']))
         if 'rand_sphere_size' in params:
-            config['model']['rand_sphere_size'] = params['rand_sphere_size']
+            config['model']['rand_sphere_size'] = float(convert_numpy(params['rand_sphere_size']))
         
         # Update rendering parameters
         if 'num_views' in params:
-            config['rendering']['num_views'] = params['num_views']
+            config['rendering']['num_views'] = int(convert_numpy(params['num_views']))
         if 'image_width' in params:
-            config['rendering']['image_width'] = params['image_width']
+            config['rendering']['image_width'] = int(convert_numpy(params['image_width']))
         if 'image_height' in params:
-            config['rendering']['image_height'] = params['image_height']
+            config['rendering']['image_height'] = int(convert_numpy(params['image_height']))
         if 'vfov_degrees' in params:
-            config['rendering']['vfov_degrees'] = params['vfov_degrees']
+            config['rendering']['vfov_degrees'] = float(convert_numpy(params['vfov_degrees']))
         
         # Update optimization parameters
         if 'num_epochs' in params:
-            config['optimization']['num_epochs'] = params['num_epochs']
+            config['optimization']['num_epochs'] = int(convert_numpy(params['num_epochs']))
         if 'batch_size' in params:
-            config['optimization']['batch_size'] = params['batch_size']
+            config['optimization']['batch_size'] = int(convert_numpy(params['batch_size']))
         if 'initial_lr' in params:
-            config['optimization']['initial_lr'] = params['initial_lr']
+            config['optimization']['initial_lr'] = float(convert_numpy(params['initial_lr']))
         if 'opt_shape_scale' in params:
-            config['optimization']['opt_shape_scale'] = params['opt_shape_scale']
+            config['optimization']['opt_shape_scale'] = float(convert_numpy(params['opt_shape_scale']))
         
         # Update learning rate schedule
         if 'lr_decay_p_thresh' in params:
-            config['optimization']['lr_decay_p_thresh'] = params['lr_decay_p_thresh']
+            config['optimization']['lr_decay_p_thresh'] = float(convert_numpy(params['lr_decay_p_thresh']))
         if 'lr_decay_window' in params:
-            config['optimization']['lr_decay_window'] = params['lr_decay_window']
+            config['optimization']['lr_decay_window'] = int(convert_numpy(params['lr_decay_window']))
         if 'lr_decay_p_window' in params:
-            config['optimization']['lr_decay_p_window'] = params['lr_decay_p_window']
+            config['optimization']['lr_decay_p_window'] = int(convert_numpy(params['lr_decay_p_window']))
         if 'lr_decay_slope_less' in params:
-            config['optimization']['lr_decay_slope_less'] = params['lr_decay_slope_less']
+            config['optimization']['lr_decay_slope_less'] = float(convert_numpy(params['lr_decay_slope_less']))
         if 'lr_decay_max_drops' in params:
-            config['optimization']['lr_decay_max_drops'] = params['lr_decay_max_drops']
+            config['optimization']['lr_decay_max_drops'] = int(convert_numpy(params['lr_decay_max_drops']))
         
         # Update hyperparameters
         if 'beta2_exp' in params:
-            config['hyperparams']['beta2_exp'] = params['beta2_exp']
+            config['hyperparams']['beta2_exp'] = float(convert_numpy(params['beta2_exp']))
         if 'beta3_exp' in params:
-            config['hyperparams']['beta3_exp'] = params['beta3_exp']
+            config['hyperparams']['beta3_exp'] = float(convert_numpy(params['beta3_exp']))
         
         return config
     

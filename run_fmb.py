@@ -164,11 +164,94 @@ def benchmark(name, timings):
     return Timer(name, timings)
 
 
+def calculate_depth_quality_metrics(estimated_depths, ground_truth_depths):
+    """Calculate comprehensive depth quality metrics"""
+    import cv2
+    
+    metrics = {}
+    
+    for i, (est_depth, gt_depth) in enumerate(zip(estimated_depths, ground_truth_depths)):
+        # Convert to numpy arrays
+        est_depth = np.array(est_depth)
+        gt_depth = np.array(gt_depth)
+        
+        # Create masks for valid pixels
+        est_mask = ~np.isnan(est_depth)
+        gt_mask = ~np.isnan(gt_depth)
+        valid_mask = est_mask & gt_mask
+        
+        if np.sum(valid_mask) == 0:
+            continue
+            
+        est_valid = est_depth[valid_mask]
+        gt_valid = gt_depth[valid_mask]
+        
+        # Normalize depths to [0, 1] for comparison
+        est_norm = (est_valid - np.min(est_valid)) / (np.max(est_valid) - np.min(est_valid) + 1e-8)
+        gt_norm = (gt_valid - np.min(gt_valid)) / (np.max(gt_valid) - np.min(gt_valid) + 1e-8)
+        
+        # Mean Absolute Error
+        mae = np.mean(np.abs(est_norm - gt_norm))
+        
+        # Root Mean Square Error
+        rmse = np.sqrt(np.mean((est_norm - gt_norm) ** 2))
+        
+        # Structural Similarity Index (SSIM)
+        try:
+            # Convert to uint8 for SSIM calculation
+            est_uint8 = (est_norm * 255).astype(np.uint8)
+            gt_uint8 = (gt_norm * 255).astype(np.uint8)
+            
+            # Reshape to 2D for SSIM
+            size = int(np.sqrt(len(est_uint8)))
+            if size * size == len(est_uint8):
+                est_2d = est_uint8.reshape(size, size)
+                gt_2d = gt_uint8.reshape(size, size)
+                ssim = cv2.SSIM(est_2d, gt_2d)
+            else:
+                ssim = 0.0
+        except:
+            ssim = 0.0
+        
+        # Correlation coefficient
+        correlation = np.corrcoef(est_norm, gt_norm)[0, 1] if len(est_norm) > 1 else 0.0
+        
+        metrics[f'view_{i}'] = {
+            'mae': mae,
+            'rmse': rmse,
+            'ssim': ssim,
+            'correlation': correlation
+        }
+    
+    # Aggregate metrics across all views
+    if metrics:
+        all_mae = [m['mae'] for m in metrics.values()]
+        all_rmse = [m['rmse'] for m in metrics.values()]
+        all_ssim = [m['ssim'] for m in metrics.values()]
+        all_corr = [m['correlation'] for m in metrics.values()]
+        
+        metrics['aggregate'] = {
+            'mean_mae': np.mean(all_mae),
+            'mean_rmse': np.mean(all_rmse),
+            'mean_ssim': np.mean(all_ssim),
+            'mean_correlation': np.mean(all_corr),
+            'std_mae': np.std(all_mae),
+            'std_rmse': np.std(all_rmse),
+            'std_ssim': np.std(all_ssim),
+            'std_correlation': np.std(all_corr)
+        }
+    
+    return metrics
+
+
 def main():
     # Parse arguments and load config
     args = parse_args()
     config = load_config(args.config)
     config = merge_config_and_args(config, args)
+    
+    # Check for tune mode
+    TUNE_MODE = os.environ.get('TUNE_MODE', 'false').lower() == 'true'
     
     # Extract config values
     NUM_MIXTURE = config['model']['num_mixtures']
@@ -196,19 +279,20 @@ def main():
     # ============================================================================
     # BANNER
     # ============================================================================
-    print("=" * 80)
-    print(" " * 20 + "FUZZY METABALLS DIFFERENTIABLE RENDERER")
-    print(" " * 15 + "Shape from Silhouette Reconstruction Demo")
-    print("=" * 80)
-    print()
-    print("📄 Paper: Keselman & Hebert, ECCV 2022")
-    print("🔗 Project: https://leonidk.github.io/fuzzy-metaballs")
-    print()
-    print("⚡ Performance claims from paper:")
-    print("   • Forward passes:  ~5x faster than mesh renderers")
-    print("   • Backward passes: ~30x faster than mesh renderers")
-    print("=" * 80)
-    print()
+    if not TUNE_MODE:
+        print("=" * 80)
+        print(" " * 20 + "FUZZY METABALLS DIFFERENTIABLE RENDERER")
+        print(" " * 15 + "Shape from Silhouette Reconstruction Demo")
+        print("=" * 80)
+        print()
+        print("📄 Paper: Keselman & Hebert, ECCV 2022")
+        print("🔗 Project: https://leonidk.github.io/fuzzy-metaballs")
+        print()
+        print("⚡ Performance claims from paper:")
+        print("   • Forward passes:  ~5x faster than mesh renderers")
+        print("   • Backward passes: ~30x faster than mesh renderers")
+        print("=" * 80)
+        print()
     
     # ============================================================================
     # SETUP
@@ -772,6 +856,30 @@ def main():
     print("   Project: https://leonidk.github.io/fuzzy-metaballs")
     print()
     print("=" * 80)
+    
+    # ============================================================================
+    # TUNE MODE: RETURN METRICS
+    # ============================================================================
+    if TUNE_MODE:
+        # Calculate depth quality metrics
+        depth_metrics = calculate_depth_quality_metrics(alpha_results_depth, ref_depths)
+        
+        # Return comprehensive metrics as JSON
+        import json
+        metrics = {
+            'final_loss': losses[-1],
+            'initial_loss': losses[0],
+            'loss_reduction': (1 - losses[-1]/losses[0])*100,
+            'total_time': opt_total_time,
+            'avg_forward_time': avg_forward,
+            'avg_backward_time': avg_backward,
+            'num_iterations': iteration_count,
+            'depth_quality': depth_metrics,
+            'config': config
+        }
+        
+        print(json.dumps(metrics, indent=2))
+        return metrics
 
 
 if __name__ == '__main__':

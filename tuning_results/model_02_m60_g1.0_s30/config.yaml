@@ -1,0 +1,29 @@
+hyperparams:
+  beta2_exp: 2.0
+  beta3_exp: 0.25
+io:
+  mesh_file: data/cow.obj
+  model_filename: fuzzy_cow_shape.pkl
+  output_dir: output
+  save_model: true
+model:
+  gmm_init_scale: 1.0
+  num_mixtures: 60
+  rand_sphere_size: 30
+optimization:
+  batch_size: 800
+  clip_alpha: 3.0e-08
+  initial_lr: 0.1
+  lr_decay_max_drops: 4
+  lr_decay_p_thresh: 0.5
+  lr_decay_p_window: 5
+  lr_decay_slope_less: -0.0001
+  lr_decay_window: 10
+  num_epochs: 10
+  opt_shape_scale: 2.2
+random_seed: 42
+rendering:
+  image_height: 64
+  image_width: 64
+  num_views: 20
+  vfov_degrees: 45

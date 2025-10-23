@@ -43,7 +43,7 @@ class FuzzyMetaballsAutotuner:
             'vfov_degrees': (20, 80),            # Much wider range
             
             # Optimization parameters
-            'num_epochs': (3, 50),              # Much wider range
+            'num_epochs': (3, 100),              # Much wider range
             'batch_size': (100, 4000),          # Much wider range
             'initial_lr': (0.001, 2.0),         # Much wider range
             'opt_shape_scale': (0.5, 5.0),      # Much wider range
